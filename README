@@ -1,0 +1,35 @@
+COIN
+A minimal instruction set computer (MISC) design. Implemented in CALM.
+
+SPECS
+Ram: 64 KiB
+Reg. File: 16 (1 B per reg., r0 tied to 0)
+Call Stk.: 16 B (8 addresses)
+Data Pntr.: 2 B
+Inst. Pntr.: 2 B
+
+ARCHITECTURE NOTES
+- Program is stored starting at 0x0, which is also where IP starts.
+- DP starts at 0x400.
+
+INSTRUCTIONS
+[opc 4] [rx 4] [ry 4] [rz 4]
+[opc 4] [rx 4] [data 8]
+
+OPCODES
+0: LDI - rx = data
+1: SHR - rx = (ry >> rz)
+2: CLL - push ip; ip = data + rx
+3: RET - pop ip
+4: AND - rx = ry & rz
+5: NOR - rx = ~(ry | rz)
+6: ADD - rx = ry + rz
+7: SUB - rx = ry - rz
+8: JMP - ip = data + rx
+9: OUT - print ascii(ram[dp])
+a: SKZ - skip if rx == 0
+b: SKC - skip if carry
+c: MVI - dp = ryrz + rx
+d: STO - ram[dp + rx] = data
+e: LOD - rx = ram[dp + ry]
+f: HLT - halt clock
