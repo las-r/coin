@@ -1,74 +1,119 @@
 ;use fs
 ;use io
+;use mem
+;use os
+
+extc def i32 _access([u8] path, i32 mode)
 
 // coin emulator
 // by las-r
+// v1.0.0
 
-// register value setter
-def setr([u8] reg, u8 i, u8 data) {
-    if !(i == 0) {
+// register setting helper
+def void setr([u8] reg, u8 i, u8 data) {
+    if i != 0 {
         reg:i = data
     }
 }
 
+// addition helper
+def u8 add([u8] reg, u8 x, u8 ry, u8 rz) {
+    u8 sum = ry + rz
+    setr(reg, x, sum)
+    if sum < ry {
+        return 0
+    }
+    return 1
+}
+
 // main
 def i32 main(i32 argc, [[u8]] argv) {
-    // get filename
     if argc < 2 {
         printf("usage: coin <program.bin>\n")
         return 1
-    } else {
-        [u8] filename = argv:1
     }
+    [u8] filename = argv:1
 
-    // set up values
     [u8] ram = malloc(65536)
-    [u8] reg = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-    [u8] cll = {0} // will implement later
+    [u8] reg = malloc(16)
+    u16[8] stk = {0, 0, 0, 0, 0, 0, 0, 0}
+    i32 n = 0
+    while n < 16 {
+        reg:n = 0
+        n = n + 1
+    }
+    i32 sp = 0
     u16 dp = 1024
     u16 ip = 0
     u8 halt = 0
+    u8 c = 0
 
-    // load program into ram
-    [u8] f = fopen(filename, "rb")
-    if !f {
-        printf("could not open '%s'", filename)
+    if _access(filename, 0) != 0 {
+        printf("could not open '%s'\n", filename)
         free(ram)
         return 1
     }
+    [u8] f = fopen(filename, "rb")
     i32 bytes = fread(ram, 1, 65536, f)
     fclose(f)
+    printf("loaded %d bytes\n", bytes)
 
-    // decode instruction and execute
     while !halt {
-        u16 inst = (ram:ip << 8) | ram:(ip + 1)
+        u16 ip1 = ip + 1
+        u16 hi = ram:ip
+        u16 lo = ram:ip1
+        u16 inst = (hi << 8) | lo
         u8 opc = inst >> 12
         u8 x = (inst >> 8) & 15
         u8 y = (inst >> 4) & 15
         u8 z = inst & 15
         u8 data = inst & 255
 
+        // widened copies to avoid u8 wraparound
+        u16 d16 = data
+        u16 rx16 = reg:x
+        u16 ry16 = reg:y
+        u16 rz16 = reg:z
+        u16 addr = dp + rx16
+
         ip = ip + 2
 
-        if opc == 0 { setr(reg, x, data) } 
+        if opc == 0 { setr(reg, x, data) }
         else if opc == 1 { setr(reg, x, (reg:y >> reg:z)) }
-        //else if opc == 2 { later }
-        //else if opc == 3 { later }
+        else if opc == 2 {
+            if sp >= 8 {
+                printf("Stack overflow\n")
+                free(ram)
+                return 1
+            }
+            stk:sp = ip
+            sp = sp + 1
+            ip = d16 + rx16
+        }
+        else if opc == 3 {
+            if sp == 0 {
+                printf("Stack underflow\n")
+                free(ram)
+                return 1
+            }
+            sp = sp - 1
+            ip = stk:sp
+        }
         else if opc == 4 { setr(reg, x, reg:y & reg:z) }
         else if opc == 5 { setr(reg, x, ~(reg:y | reg:z)) }
-        //else if opc == 6 { setr(reg, x, reg:y + reg:z) }
-        //else if opc == 7 { setr(reg, x, reg:y - reg:z) }
-        else if opc == 8 { ip = data + reg:x }
-        else if opc == 9 { ip = ((reg:y << 8) | reg:z) + reg:x }
+        else if opc == 6 { c = add(reg, x, reg:y, reg:z) }
+        else if opc == 7 { c = add(reg, x, reg:y, (~reg:z) + 1) }
+        else if opc == 8 { ip = d16 + rx16 }
+        else if opc == 9 { printf("%c", ram:dp) }
         else if opc == 10 { if reg:x == 0 { ip = ip + 2 } }
-        //else if opc == 11 { later }
-        else if opc == 12 { dp = ((reg:y << 8) | reg:z) + reg:x }
-        else if opc == 13 { ram:(dp + reg:x) = data }
-        else if opc == 14 { setr(reg, x, ram:(dp + reg:x)) }
+        else if opc == 11 { if c { ip = ip + 2 } }
+        else if opc == 12 { dp = ((ry16 << 8) | rz16) + rx16 }
+        else if opc == 13 { ram:addr = data }
+        else if opc == 14 { setr(reg, x, ram:addr) }
         else if opc == 15 { halt = 1 }
     }
 
-    // deinit
+    printf("\n")
     free(ram)
     return 0
 }
