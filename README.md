@@ -28,7 +28,7 @@ A minimal instruction set computer (MISC) design. Implemented in [CALM](https://
 | `0xa` | `SKZ` | skip if Rx == 0 |
 | `0xb` | `SKC` | skip if CARRY |
 | `0xc` | `MVI` | DP = RyRz + Rx |
-| `0xd` | `STO` | RAM[DP + Rx] = RyRz |
+| `0xd` | `STO` | RAM[DP + Ry] = Rx |
 | `0xe` | `LOD` | Rx = RAM[DP + Ry] |
 | `0xf` | `HLT` | halt clock |
 

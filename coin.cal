@@ -7,7 +7,7 @@ extc def i32 _access([u8] path, i32 mode)
 
 // coin emulator
 // by las-r
-// v1.1.0
+// v1.2.0
 
 // register setting helper
 def void setr([u8] reg, u8 i, u8 data) {
@@ -74,7 +74,7 @@ def i32 main(i32 argc, [[u8]] argv) {
         u16 rx16 = reg:x
         u16 ry16 = reg:y
         u16 rz16 = reg:z
-        u16 addr = dp + rx16
+        u16 addr = dp + ry16
 
         ip = ip + 2
 
@@ -108,7 +108,7 @@ def i32 main(i32 argc, [[u8]] argv) {
         else if opc == 10 { if reg:x == 0 { ip = ip + 2 } }
         else if opc == 11 { if c { ip = ip + 2 } }
         else if opc == 12 { dp = ((ry16 << 8) | rz16) + rx16 }
-        else if opc == 13 { ram:addr = ((ry16 << 8) | rz16) }
+        else if opc == 13 { ram:addr = reg:x }
         else if opc == 14 { setr(reg, x, ram:addr) }
         else if opc == 15 { halt = 1 }
     }
