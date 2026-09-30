@@ -20,7 +20,7 @@ A minimal instruction set computer (MISC) design. Implemented in [CALM](https://
 | `0x2` | `CLL` | push IP; IP = data + Rx |
 | `0x3` | `RET` | pop IP |
 | `0x4` | `AND` | Rx = Ry & Rz |
-| `0x5` | `NOR` | Rx = ~(Ry | Rz) |
+| `0x5` | `NOR` | Rx = ~(Ry \| Rz) |
 | `0x6` | `ADD` | Rx = Ry + Rz |
 | `0x7` | `SUB` | Rx = Ry - Rz |
 | `0x8` | `JMP` | IP = yz + Rx |
