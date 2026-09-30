@@ -7,7 +7,7 @@ extc def i32 _access([u8] path, i32 mode)
 
 // coin emulator
 // by las-r
-// v1.2.0
+// v1.2.1
 
 // register setting helper
 def void setr([u8] reg, u8 i, u8 data) {
@@ -40,6 +40,10 @@ def i32 main(i32 argc, [[u8]] argv) {
     i32 n = 0
     while n < 16 {
         reg:n = 0
+        n = n + 1
+    }
+    while n < 65536 {
+        ram:n = 0
         n = n + 1
     }
     i32 sp = 0
