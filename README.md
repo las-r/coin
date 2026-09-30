@@ -1,5 +1,5 @@
 # COIN
-A minimal instruction set computer (MISC) design. Implemented in CALM.
+A minimal instruction set computer (MISC) design. Implemented in [CALM](https://github.com/las-r/calm).
 
 ## Specifications
 **RAM:** 64 KiB\
